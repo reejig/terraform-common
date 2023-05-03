@@ -1,0 +1,25 @@
+name: test
+
+on:
+  workflow_dispatch:
+  push:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  WORKINGDIR: __tests__/tools/foundational
+
+jobs:
+  ecs-foundation:
+    uses: ./.github/workflows/reusable-terraform-apply.yml
+    #! env:
+    #!   WORKINGDIR: __tests__/tools/foundational
+    secrets: inherit
+  ecs-service:
+    uses: ./.github/workflows/reusable-terraform-apply.yml
+    needs: ecs-foundation
+    env:
+      WORKINGDIR: __tests__/tools/app
+    secrets: inherit

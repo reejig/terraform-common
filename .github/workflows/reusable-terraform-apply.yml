@@ -1,0 +1,66 @@
+on:
+  workflow_call:
+
+jobs:
+
+  check:
+    runs-on: reejig-development-ap-southeast-2
+    env:
+      REGION: 'ap-southeast-2'
+      ACCOUNT: 'reejig-development'
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo ${{ env.WORKINGDIR }}
+
+  #! terraform-check:
+  #!   concurrency:
+  #!     group: ${{ github.ref }}-all-accounts-dns-check
+  #!     cancel-in-progress: true
+  #!   runs-on: reejig-development-ap-southeast-2
+  #!   env:
+  #!     REGION: 'ap-southeast-2'
+  #!     ACCOUNT: 'reejig-development'
+  #!   steps:
+  #!     - uses: actions/checkout@v3
+
+  #!     - uses: ./.github/actions/aws/login
+  #!       with:
+  #!         region: ${{ env.REGION }}
+  #!         account: ${{ env.ACCOUNT }}
+
+  #!     - uses: ./.github/actions/terraform/setup
+
+  #!     - uses: ./.github/actions/terraform/check
+  #!       with:
+  #!         github_token: ${{ secrets.ROBOT_GITHUB_TOKEN }}
+
+  #! reejig-development-terraform:
+  #!   concurrency:
+  #!     group: all-accounts-dns-reejig-development
+  #!     cancel-in-progress: true
+  #!   runs-on: reejig-development-ap-southeast-2
+  #!   needs:
+  #!     - terraform-check
+  #!   env:
+  #!     REGION: ap-southeast-2
+  #!     ACCOUNT: reejig-development
+  #!   steps:
+  #!     - uses: actions/checkout@v1
+
+  #!     - uses: ./.github/actions/aws/login
+  #!       with:
+  #!         region: ${{ env.REGION }}
+  #!         account: ${{ env.ACCOUNT }}
+
+  #!     - uses: ./.github/actions/terraform/setup
+
+  #!     - uses: ./.github/actions/terraform/plan
+  #!       with:
+  #!         slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
+  #!         github_token: ${{ secrets.ROBOT_GITHUB_TOKEN }}
+  #!         tf_workspace: ${{ env.ACCOUNT }}-${{ env.REGION }}
+
+  #!     - uses: ./.github/actions/terraform/apply
+  #!       if: ${{ ( github.ref == 'refs/heads/master' && github.event.inputs.run_apply == '' ) || ( github.event.inputs.run_apply == 'true' && ( github.event.inputs.environments == 'all' || github.event.inputs.environments == 'dev' )) }}
+  #!       with:
+  #!         slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
