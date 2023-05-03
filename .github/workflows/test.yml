@@ -14,10 +14,14 @@ env:
 jobs:
   ecs-foundation:
     uses: ./.github/workflows/reusable-terraform-apply.yml
-    #! env:
-    #!   WORKINGDIR: __tests__/tools/foundational
+    with:
+      region: ap-southeast-2
+      account: reejig-development
+      path: __tests__/tools/foundational
     secrets: inherit
-  ecs-service:
-    uses: ./.github/workflows/reusable-terraform-apply.yml
-    needs: ecs-foundation
-    secrets: inherit
+  #! ecs-service:
+  #!   uses: ./.github/workflows/reusable-terraform-apply.yml
+  #!   needs: ecs-foundation
+  #!   with:
+  #!     path: __tests__/tools/app
+  #!   secrets: inherit

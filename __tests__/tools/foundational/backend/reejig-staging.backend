@@ -1,0 +1,5 @@
+region               = "ap-southeast-2"
+dynamodb_table       = "reejig-terraform-remote-state-lock"
+bucket               = "reejig-staging-terraform-remote-state"
+encrypt              = true
+workspace_key_prefix = "account"
