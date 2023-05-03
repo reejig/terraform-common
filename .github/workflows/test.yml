@@ -20,6 +20,4 @@ jobs:
   ecs-service:
     uses: ./.github/workflows/reusable-terraform-apply.yml
     needs: ecs-foundation
-    env:
-      WORKINGDIR: __tests__/tools/app
     secrets: inherit
