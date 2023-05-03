@@ -21,7 +21,7 @@ jobs:
       ACCOUNT: ${{ inputs.account }}
     steps:
       - uses: actions/checkout@v3
-      - uses: reejig/github-actions/aws/login@v1
+      - uses: reejig/github-actions/aws/login@v2
         with:
           region: ${{ env.REGION }}
           account: ${{ env.ACCOUNT }}
