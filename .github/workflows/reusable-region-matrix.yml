@@ -1,0 +1,31 @@
+name: 'reusable: region matrix'
+on:
+  workflow_call:
+    inputs:
+      branch:
+        default: main
+        type: string
+    outputs:
+      matrix:
+        value: ${{ jobs.generate.outputs.matrix }}
+jobs:
+  generate:
+    runs-on: reejig-development-ap-southeast-2
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: generate token
+        id: generate_token
+        uses: reejig/github-app-token@v1
+        with:
+          app_id: ${{ secrets.RUNNER_APP_ID }}
+          private_key: ${{ secrets.RUNNER_KEY }}
+      - uses: actions/checkout@v3
+        with:
+          repository: reejig/environments-sites-customers
+          token: ${{ steps.generate_token.outputs.token }}
+          ref: refs/heads/${{ inputs.branch }}
+      - id: set-matrix
+        uses: reejig/generate-matrix@main
+        with:
+          level: region

@@ -1,0 +1,25 @@
+on:
+  workflow_call:
+    inputs:
+      env:
+        description: environment name
+        type: string
+      matrix:
+        description: matrix
+        type: string
+jobs:
+  ecs-foundation:
+    uses: ./.github/workflows/reusable-terraform-apply.yml
+    with:
+      env: ${{ inputs.env }}
+      matrix: ${{ inputs.matrix }}
+      path: __tests__/tools/foundational
+    secrets: inherit
+  ecs-service:
+    uses: ./.github/workflows/reusable-terraform-apply.yml
+    needs: ecs-foundation
+    with:
+      env: ${{ inputs.env }}
+      matrix: ${{ inputs.matrix }}
+      path: __tests__/tools/app
+    secrets: inherit

@@ -1,44 +1,28 @@
 on:
   workflow_call:
     inputs:
-      region:
-        description: region to run in
+      env:
+        description: environment name
         type: string
-      account:
-        description: account to run in
+      matrix:
+        description: matrix
         type: string
       path:
         description: Relative path under $GITHUB_WORKSPACE for the terraform workspace
         type: string
 jobs:
-  check:
+  plan:
     concurrency:
-      group: ${{ github.ref }}-${{ inputs.path }}
-      cancel-in-progress: true
-    runs-on: reejig-development-ap-southeast-2
+      group: ${{ inputs.path }}-${{ matrix.account }}-${{ matrix.region }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix: ${{ inputs.matrix }}
+    runs-on: ${{ matrix.account }}-${{ matrix.region }}
     env:
-      REGION: ${{ inputs.region }}
-      ACCOUNT: ${{ inputs.account }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: reejig/github-actions/aws/login@v2
-        with:
-          region: ${{ env.REGION }}
-          account: ${{ env.ACCOUNT }}
-      - uses: reejig/github-actions/terraform/setup@v1
-      - uses: reejig/github-actions/terraform/check@v1
-        with:
-          path: ${{ inputs.path }}
-  apply:
-    concurrency:
-      group: ${{ inputs.path }}[]]]-reejig-development
-      cancel-in-progress: true
-    runs-on: reejig-development-ap-southeast-2
-    needs:
-      - check
-    env:
-      REGION: ap-southeast-2
-      ACCOUNT: reejig-development
+      REGION: ${{ matrix.region }}
+      ACCOUNT: ${{ matrix.account }}
+      ENV: ${{ inputs.env }}
     steps:
       - uses: actions/checkout@v1
       - uses: reejig/github-actions/aws/login@v2
@@ -49,12 +33,34 @@ jobs:
       - uses: reejig/github-actions/terraform/plan@v1
         with:
           path: ${{ inputs.path }}
+          tf_plan_id: ${{ github.run_id }}-tfplan-${{ env.ACCOUNT }}-${{ env.REGION }}
+  apply:
+    needs: plan
+    concurrency:
+      group: ${{ inputs.path }}-${{ matrix.account }}-${{ matrix.region }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix: ${{ inputs.matrix }}
+    runs-on: ${{ matrix.account }}-${{ matrix.region }}
+    env:
+      REGION: ${{ matrix.region }}
+      ACCOUNT: ${{ matrix.account }}
+      ENV: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v1
+      - uses: reejig/github-actions/aws/login@v2
+        with:
+          region: ${{ env.REGION }}
+          account: ${{ env.ACCOUNT }}
+      - uses: reejig/github-actions/terraform/setup@v1
       - uses: reejig/github-actions/terraform/apply@v1
         with:
           path: ${{ inputs.path }}
-      - uses: reejig/github-actions/terraform/destroy@v1
-        with:
-          path: ${{ inputs.path }}
+          tf_plan_id: ${{ github.run_id }}-tfplan-${{ env.ACCOUNT }}-${{ env.REGION }}
+      #! - uses: reejig/github-actions/terraform/destroy@v1
+      #!   with:
+      #!     path: ${{ inputs.path }}
       #! - uses: reejig/github-actions/terraform/apply@v1
       #!   with:
       #!     path: ${{ inputs.path }}
