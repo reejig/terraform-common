@@ -49,6 +49,12 @@ jobs:
       - uses: reejig/github-actions/terraform/plan@v1
         with:
           path: ${{ inputs.path }}
+      - uses: reejig/github-actions/terraform/apply@v1
+        with:
+          path: ${{ inputs.path }}
+      - uses: reejig/github-actions/terraform/destroy@v1
+        with:
+          path: ${{ inputs.path }}
       #! - uses: reejig/github-actions/terraform/apply@v1
       #!   with:
       #!     path: ${{ inputs.path }}
