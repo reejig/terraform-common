@@ -35,7 +35,7 @@ jobs:
       cancel-in-progress: true
     runs-on: reejig-development-ap-southeast-2
     needs:
-      - terraform-check
+      - check
     env:
       REGION: ap-southeast-2
       ACCOUNT: reejig-development
