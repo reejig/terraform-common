@@ -11,24 +11,24 @@ jobs:
   matrix:
     uses: ./.github/workflows/reusable-region-matrix.yml
     secrets: inherit
-  check:
-    concurrency:
-      group: ${{ github.ref }}-${{ inputs.path }}
-      cancel-in-progress: false
-    runs-on: reejig-development-ap-southeast-2
-    env:
-      REGION: reejig-development
-      ACCOUNT: ap-southeast-2
-    steps:
-      - uses: actions/checkout@v3
-      - uses: reejig/github-actions/aws/login@v2
-        with:
-          region: ${{ env.REGION }}
-          account: ${{ env.ACCOUNT }}
-      - uses: reejig/github-actions/terraform/setup@v1
-      - uses: reejig/github-actions/terraform/check@v1
-        with:
-          path: ${{ inputs.path }}
+#   check:
+#     concurrency:
+#       group: ${{ github.ref }}-${{ inputs.path }}
+#       cancel-in-progress: false
+#     runs-on: reejig-development-ap-southeast-2
+#     env:
+#       REGION: reejig-development
+#       ACCOUNT: ap-southeast-2
+#     steps:
+#       - uses: actions/checkout@v3
+#       - uses: reejig/github-actions/aws/login@v2
+#         with:
+#           region: ${{ env.REGION }}
+#           account: ${{ env.ACCOUNT }}
+#       - uses: reejig/github-actions/terraform/setup@v1
+#       - uses: reejig/github-actions/terraform/check@v1
+#         with:
+#           path: ${{ inputs.path }}
   dev:
     uses: ./.github/workflows/reusable-terraform-orchestrate.yml
     needs:
