@@ -33,26 +33,25 @@ jobs:
     uses: ./.github/workflows/reusable-terraform-orchestrate.yml
     needs:
     - matrix
-    - check
     with:
       env: dev
       matrix: ${{fromJson(needs.matrix.outputs.matrix).dev}}
     secrets: inherit
-  stage:
-    uses: ./.github/workflows/reusable-terraform-orchestrate.yml
-    needs:
-    - matrix
-    - dev
-    with:
-      env: stage
-      matrix: ${{fromJson(needs.matrix.outputs.matrix).stage}}
-    secrets: inherit
-  prod:
-    uses: ./.github/workflows/reusable-terraform-orchestrate.yml
-    needs:
-    - matrix
-    - stage
-    with:
-      env: prod
-      matrix: ${{fromJson(needs.matrix.outputs.matrix).prod}}
-    secrets: inherit
+#   stage:
+#     uses: ./.github/workflows/reusable-terraform-orchestrate.yml
+#     needs:
+#     - matrix
+#     - dev
+#     with:
+#       env: stage
+#       matrix: ${{fromJson(needs.matrix.outputs.matrix).stage}}
+#     secrets: inherit
+#   prod:
+#     uses: ./.github/workflows/reusable-terraform-orchestrate.yml
+#     needs:
+#     - matrix
+#     - stage
+#     with:
+#       env: prod
+#       matrix: ${{fromJson(needs.matrix.outputs.matrix).prod}}
+#     secrets: inherit
