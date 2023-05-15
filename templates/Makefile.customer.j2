@@ -15,6 +15,13 @@
 .ONESHELL:
 .SHELL := /bin/bash
 .PHONY: apply destroy destroy-target plan-destroy plan plan-out plan-target prep
+
+# Defaults
+SITE?=001
+CUSTOMER?=demo1
+ACCOUNT?=reeejig-development
+REGION?=ap-southeast-2
+
 KEY="{{ prefix }}/$(SITE)/$(CUSTOMER)/terraform.tfstate"
 WORKSPACE="$(ACCOUNT)-$(REGION)"
 TF_BUCKET="$(ACCOUNT)-terraform-remote-state"
@@ -23,6 +30,11 @@ RED=$(shell tput setaf 1)
 GREEN=$(shell tput setaf 2)
 YELLOW=$(shell tput setaf 3)
 RESET=$(shell tput sgr0)
+
+export TF_VAR_customer_name=$(CUSTOMER)
+export TF_VAR_site_id=$(SITE)
+export TF_VAR_account=$(ACCOUNT)
+export TF_VAR_aws_region=$(REGION)
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
