@@ -1,0 +1,5 @@
+{
+  "app_name": "my-app",
+  "stack_name": "foundational",
+  "level": ["region","site","customer"]
+}

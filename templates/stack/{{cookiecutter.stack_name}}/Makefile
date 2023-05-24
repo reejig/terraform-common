@@ -17,12 +17,14 @@
 .PHONY: apply destroy destroy-target plan-destroy plan plan-out plan-target prep
 
 # Defaults
-SITE?=001
-CUSTOMER?=demo1
-ACCOUNT?=reeejig-development
+{% if cookiecutter.level == "customer" %}CUSTOMER?=demo1{% endif %}
+{% if cookiecutter.level != "region" %}SITE?=001{% endif %}
+ACCOUNT?=reejig-development
 REGION?=ap-southeast-2
 
-KEY="{{ prefix }}/$(SITE)/$(CUSTOMER)/terraform.tfstate"
+PACKAGE_VERSION?=snapshot
+CONFIG_BRANCH?=refs/heads/main
+
 WORKSPACE="$(ACCOUNT)-$(REGION)"
 TF_BUCKET="$(ACCOUNT)-terraform-remote-state"
 BOLD=$(shell tput bold)
@@ -35,19 +37,24 @@ export TF_VAR_customer_name=$(CUSTOMER)
 export TF_VAR_site_id=$(SITE)
 export TF_VAR_account=$(ACCOUNT)
 export TF_VAR_aws_region=$(REGION)
+export TF_VAR_package_version=$(PACKAGE_VERSION)
+export TF_VAR_config_branch=$(CONFIG_BRANCH)
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 set-env:
+	{% if cookiecutter.level != "region" %}
 	@if [ -z $(SITE) ]; then \
 		echo "$(BOLD)$(RED)SITE was not set$(RESET)"; \
 		ERROR=1; \
 	 fi
+	{%- endif -%}
+	{% if cookiecutter.level == "customer" %}
 	@if [ -z $(CUSTOMER) ]; then \
 		echo "$(BOLD)$(RED)CUSTOMER was not set$(RESET)"; \
 		ERROR=1; \
-	 fi
+	 fi{% endif %}
 	@if [ -z $(ACCOUNT) ]; then \
 		echo "$(BOLD)$(RED)ACCOUNT was not set.$(RESET)"; \
 		ERROR=1; \
@@ -57,7 +64,11 @@ set-env:
 		ERROR=1; \
 	 fi
 	@if [ ! -z $${ERROR} ] && [ $${ERROR} -eq 1 ]; then \
-		echo "$(BOLD)Example usage: \`ACCOUNT=reejig-development SITE=001 CUSTOMER=demo1 REGION=ap-southeast-2 remake plan\`$(RESET)"; \
+		echo "$(BOLD)Example usage: \`ACCOUNT=reejig-development {% if cookiecutter.level != "region" %}SITE=001 {% endif %}{% if cookiecutter.level == "customer" %}CUSTOMER=demo1 {% endif %}REGION=ap-southeast-2 remake plan\`$(RESET)"; \
+		exit 1; \
+	 fi
+	@if [ ! -f stack.id ]; then \
+    echo "$(BOLD)$(RED)Please create a stack.id file and provide a unique name for this stack$(RESET)"; \
 		exit 1; \
 	 fi
 
@@ -67,7 +78,7 @@ prep: set-env ## Prepare a new workspace (environment) if needed, configure the 
 	@rm .terraform/environment
 	@echo "$(YELLOW)Account/Workspace:        $(WORKSPACE)$(RESET)"
 	@echo "$(YELLOW)Backend Config Bucket:    $(TF_BUCKET)$(RESET)"
-	@echo "$(YELLOW)Backend Config Key:       $(KEY)$(RESET)"
+	@echo "$(YELLOW)Stack Id:                 $$(cat stack.id)$(RESET)"
 
 	@terraform init \
 		-force-copy \
@@ -77,7 +88,7 @@ prep: set-env ## Prepare a new workspace (environment) if needed, configure the 
 		-reconfigure \
 		-backend=true \
 	  -backend-config="backend.config" \
-		-backend-config="key=$(KEY)" \
+		-backend-config="key=$$(cat stack.id)/$(SITE)/$(CUSTOMER)/terraform.tfstate" \
 		-backend-config="bucket=$(TF_BUCKET)" \
 	  -backend-config="acl=private"
 	@echo "$(BOLD)Switching to workspace $(WORKSPACE)$(RESET)"
@@ -162,3 +173,9 @@ destroy-target: prep ## Destroy a specific resource. Caution though, this destro
 		-refresh=true \
 		-target=$$DATA \
 		-out=destroy.tfplan
+
+import: ## Import a resource
+	@echo "$(YELLOW)$(BOLD)[INFO] Commencing interactive import.$(RESET)"; echo "Example to type for the following question: module.rds.aws_route53_record.rds-master"
+	@read -p "Terraform address: " TF_ADDR && \
+	read -p "Resource identifier: " RESOURCE_ID && \
+  terraform import $$TF_ADDR $$RESOURCE_ID
