@@ -17,13 +17,20 @@
 .PHONY: apply destroy destroy-target plan-destroy plan plan-out plan-target prep
 
 # Defaults
-{% if cookiecutter.level == "customer" %}CUSTOMER?=demo1{% endif %}
-{% if cookiecutter.level != "region" %}SITE?=001{% endif %}
-ACCOUNT?=reejig-development
+{%- if cookiecutter.level == "customer" %}
+CUSTOMER?=demo1
+{%- endif %}
+{%- if cookiecutter.level != "region" %}
+SITE?=001
+{%- endif %}
+ACCOUNT?=reejig{% if cookiecutter.scope == "shared" %}-shared{% else %}-development{% endif %}
 REGION?=ap-southeast-2
-
+{%- if cookiecutter.versionable == "true" %}
 PACKAGE_VERSION?=snapshot
+{%- endif %}
+{%- if cookiecutter.scope == "environments-sites-customers" %}
 CONFIG_BRANCH?=refs/heads/main
+{%- endif %}
 
 WORKSPACE="$(ACCOUNT)-$(REGION)"
 TF_BUCKET="$(ACCOUNT)-terraform-remote-state"
@@ -33,28 +40,38 @@ GREEN=$(shell tput setaf 2)
 YELLOW=$(shell tput setaf 3)
 RESET=$(shell tput sgr0)
 
+# Variables for Terraform
+{%- if cookiecutter.level == "customer" %}
 export TF_VAR_customer_name=$(CUSTOMER)
+{%- endif %}
+{%- if cookiecutter.level != "region" %}
 export TF_VAR_site_id=$(SITE)
+{%- endif %}
 export TF_VAR_account=$(ACCOUNT)
 export TF_VAR_aws_region=$(REGION)
+{%- if cookiecutter.versionable == "true" %}
 export TF_VAR_package_version=$(PACKAGE_VERSION)
+{%- endif %}
+{%- if cookiecutter.scope == "environments-sites-customers" %}
 export TF_VAR_config_branch=$(CONFIG_BRANCH)
+{%- endif %}
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 set-env:
-	{% if cookiecutter.level != "region" %}
+	{%- if cookiecutter.level != "region" %}
 	@if [ -z $(SITE) ]; then \
 		echo "$(BOLD)$(RED)SITE was not set$(RESET)"; \
 		ERROR=1; \
 	 fi
 	{%- endif -%}
-	{% if cookiecutter.level == "customer" %}
+	{%- if cookiecutter.level == "customer" %}
 	@if [ -z $(CUSTOMER) ]; then \
 		echo "$(BOLD)$(RED)CUSTOMER was not set$(RESET)"; \
 		ERROR=1; \
-	 fi{% endif %}
+	 fi
+	{%- endif %}
 	@if [ -z $(ACCOUNT) ]; then \
 		echo "$(BOLD)$(RED)ACCOUNT was not set.$(RESET)"; \
 		ERROR=1; \
@@ -175,6 +192,10 @@ destroy-target: prep ## Destroy a specific resource. Caution though, this destro
 		-out=destroy.tfplan
 
 import: ## Import a resource
+	@echo "$(YELLOW)$(BOLD)[INFO] Commencing import.$(RESET)";
+	@terraform import $(TF_ADDR) $(RESOURCE_ID)
+
+import-interactive: ## Import a resource interactively
 	@echo "$(YELLOW)$(BOLD)[INFO] Commencing interactive import.$(RESET)"; echo "Example to type for the following question: module.rds.aws_route53_record.rds-master"
 	@read -p "Terraform address: " TF_ADDR && \
 	read -p "Resource identifier: " RESOURCE_ID && \

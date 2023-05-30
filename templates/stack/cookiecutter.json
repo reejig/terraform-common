@@ -1,5 +1,7 @@
 {
   "app_name": "my-app",
   "stack_name": "foundational",
-  "level": ["region","site","customer"]
+  "level": ["region","site","customer"],
+  "versionable": ["true", "false"],
+  "scope": ["environments-sites-customers","shared"]
 }
