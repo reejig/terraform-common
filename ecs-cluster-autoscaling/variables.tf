@@ -1,7 +1,3 @@
-variable "name_prefix" {
-  description = "Name prefix for resources on AWS"
-}
-
 variable "tags" {
   type        = map(string)
   default     = {}
