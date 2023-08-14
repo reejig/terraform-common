@@ -1,10 +1,9 @@
-# ecs module to add autoscaling to services
+# ecs module to add autoscaling to cluster
 
 ```
-module "ecs-service-autoscaling" {
-  source           = "git::git@github.com:reejig/reejig-common.git//ecs-service-autoscaling"
-  name_prefix      = "${var.customer}-${var.service}"
-  ecs_cluster_name = var.cluster_name
-  ecs_service_name = aws_ecs_service.service.name
+module "ecs-cluster-autoscaling" {
+  source                = "git::git@github.com:reejig/reejig-common.git//ecs-cluster-autoscaling"
+  cluster_name          = var.cluster_name
+  aws_autoscaling_group = aws_autoscaling_group.group.name
 }
 ```
