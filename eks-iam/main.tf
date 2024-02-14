@@ -7,7 +7,7 @@ module "reejig_app_irsa" {
   role_policy_arns = var.role_policy_arns
   oidc_providers = {
     main = {
-      provider_arn               = data.aws_ssm_parameter.oidc_provider_arn[0].value
+      provider_arn               = data.aws_ssm_parameter.oidc_provider_arn.value
       namespace_service_accounts = var.namespace_service_accounts
     }
   }
