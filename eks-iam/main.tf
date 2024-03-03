@@ -12,3 +12,6 @@ module "reejig_app_irsa" {
     }
   }
 }
+output "iam_role_arn" {
+  value = module.reejig_app_irsa.iam_role_arn
+}
