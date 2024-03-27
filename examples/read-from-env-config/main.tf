@@ -1,7 +1,7 @@
 variable "region" {
   description = "Region for the configuration"
   type        = string
-  default     = "ap-southeast-2"
+  default     = "eu-west-2"
 }
 
 variable "config_branch" {
@@ -11,7 +11,7 @@ variable "config_branch" {
 }
 
 provider "aws" {
-  region = var.region
+  region = "ap-southeast-2"
   alias  = "environments_definition"
 }
 
