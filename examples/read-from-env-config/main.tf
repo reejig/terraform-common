@@ -28,3 +28,11 @@ data "aws_s3_object" "environments_definition" {
 output "siteIds" {
   value = [ for site in jsondecode(data.aws_s3_object.environments_definition.body)[local.environment]["regions"][var.region]["sites"] : site.siteId ]
 }
+
+output "customers" {
+  value = flatten([
+    for site in jsondecode(data.aws_s3_object.environments_definition.body)[local.environment]["regions"][var.region]["sites"] : [
+      for customer in site.customers : customer.name
+    ]
+  ])
+}
